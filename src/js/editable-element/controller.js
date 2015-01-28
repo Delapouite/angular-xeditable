@@ -28,7 +28,7 @@ angular.module('xeditable').factory('editableController',
     self.editorEl = null;
     self.single = true;
     self.error = '';
-    self.theme =  editableThemes[editableOptions.theme] || editableThemes['default'];
+    self.theme = editableThemes[editableOptions.theme] || editableThemes['default'];
     self.parent = {};
 
     //to be overwritten by directive
@@ -62,7 +62,7 @@ angular.module('xeditable').factory('editableController',
      * @var {string|attribute} buttons
      * @memberOf editable-element
      */    
-    self.buttons = 'right'; 
+    self.buttons = 'right';
     /**
      * Action when control losses focus. Values: `cancel|submit|ignore`.
      * Has sense only for single editable element.
@@ -139,7 +139,7 @@ angular.module('xeditable').factory('editableController',
         self.oncancel = function() {
           return $parse($attrs.oncancel)($scope);
         };
-      }          
+      }
 
       /**
        * Called during submit before value is saved to model.  
@@ -193,7 +193,7 @@ angular.module('xeditable').factory('editableController',
         self.cancelEl = angular.element(theme.cancelTpl);
         self.buttonsEl.append(self.submitEl).append(self.cancelEl);
         self.controlsEl.append(self.buttonsEl);
-        
+
         self.inputEl.addClass('editable-has-buttons');
       }
 
@@ -219,14 +219,14 @@ angular.module('xeditable').factory('editableController',
         } else {
           continue;
         }
-        
+
         // exclude `form` and `ng-submit`, 
         if(transferAttr === 'Form' || transferAttr === 'NgSubmit') {
           continue;
         }
 
         // convert back to lowercase style
-        transferAttr = transferAttr.substring(0, 1).toLowerCase() + editableUtils.camelToDash(transferAttr.substring(1));  
+        transferAttr = transferAttr.substring(0, 1).toLowerCase() + editableUtils.camelToDash(transferAttr.substring(1));
 
         // workaround for attributes without value (e.g. `multiple = "multiple"`)
         var attrValue = ($attrs[k] === '') ? transferAttr : $attrs[k];
@@ -236,7 +236,7 @@ angular.module('xeditable').factory('editableController',
       }
 
       self.inputEl.addClass('editable-input');
-      self.inputEl.attr('ng-model', '$data');
+      self.inputEl.attr('ng-model', '$parent.$data');
 
       // add directiveName class to editor, e.g. `editable-text`
       self.editorEl.addClass(editableUtils.camelToDash(self.directiveName));
@@ -263,6 +263,8 @@ angular.module('xeditable').factory('editableController',
         valueGetter($scope.$parent);
     };
 
+    var newScope = null;
+
     //show
     self.show = function() {
       // set value of scope.$data
@@ -278,8 +280,10 @@ angular.module('xeditable').factory('editableController',
       // insert into DOM
       $element.after(self.editorEl);
 
+      newScope = $scope.$new();
+
       // compile (needed to attach ng-* events from markup)
-      $compile(self.editorEl)($scope);
+      $compile(self.editorEl)(newScope);
 
       // attach listeners (`escape`, autosubmit, etc)
       self.addListeners();
@@ -293,6 +297,8 @@ angular.module('xeditable').factory('editableController',
 
     //hide
     self.hide = function() {
+      newScope.$destroy();
+
       self.editorEl.remove();
       $element.removeClass('editable-hide');
 
@@ -427,7 +433,7 @@ angular.module('xeditable').factory('editableController',
     */
     self.handleEmpty = function() {
       var val = valueGetter($scope.$parent);
-      var isEmpty = val === null || val === undefined || val === "" || (angular.isArray(val) && val.length === 0); 
+      var isEmpty = val === null || val === undefined || val === "" || (angular.isArray(val) && val.length === 0);
       $element.toggleClass('editable-empty', isEmpty);
     };
 
